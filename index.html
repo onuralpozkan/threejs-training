@@ -34,41 +34,72 @@
   <body>
     <div id="container">
       <div class="planets">
-        <button class="planet-btn" id="jupiter" data-planetname="jupiter">
+        <button
+          class="planet-btn"
+          id="jupiter"
+          data-planetname="jupiter"
+          data-scale="11"
+        >
           Jupiter
         </button>
-        <button class="planet-btn" id="mercury" data-planetname="mercury">
+        <button
+          class="planet-btn"
+          id="mercury"
+          data-planetname="mercury"
+          data-scale="0.33"
+        >
           Mercury
         </button>
-        <button class="planet-btn" id="mars" data-planetname="mars">
+        <button
+          class="planet-btn"
+          id="mars"
+          data-planetname="mars"
+          data-scale="0.5"
+        >
           Mars
         </button>
         <button
           class="planet-btn"
-          id="juptier"
-          data-planetname="jupiter"
-          data-res="8"
+          id="neptune"
+          data-planetname="neptune"
+          data-scale="4.1"
         >
-          8k Jupiter
-        </button>
-        <button class="planet-btn" id="neptune" data-planetname="neptune">
           Neptune
+        </button>
+        <button
+          class="planet-btn"
+          id="earth"
+          data-planetname="earth"
+          data-scale="1"
+        >
+          Earth
+        </button>
+        <button
+          class="planet-btn"
+          id="uranus"
+          data-planetname="uranus"
+          data-scale="4"
+        >
+          Uranus
+        </button>
+        <button
+          class="planet-btn"
+          id="venus"
+          data-planetname="venus"
+          data-scale="0.98"
+        >
+          Venus
         </button>
       </div>
     </div>
     <script type="module">
       let planetName = "mercury";
 
-      function changeTexture(planet, res = "2") {
+      function changeTexture(planet, res = "2", scale) {
         const newTexture = textureLoader.load(`./${res}k_${planet}.jpg`);
         sphere.material.map = newTexture;
         sphere.material.needsUpdate = true;
-
-        if (planet === "jupiter") {
-          sphere.scale.set(1.75, 1.75, 1.75);
-        } else {
-          sphere.scale.set(1, 1, 1);
-        }
+        sphere.scale.set(scale, scale, scale);
       }
 
       const buttons = document.querySelectorAll(".planet-btn");
@@ -89,7 +120,7 @@
       const textureLoader = new THREE.TextureLoader();
       const texture = textureLoader.load(`./2k_${planetName}.jpg`);
 
-      const geometry = new THREE.SphereGeometry(1, 32, 32);
+      const geometry = new THREE.SphereGeometry(0.28, 32, 32);
       const material = new THREE.MeshLambertMaterial({ map: texture });
       const sphere = new THREE.Mesh(geometry, material);
       scene.add(sphere);
@@ -110,6 +141,18 @@
         starVertices.push(x, y, z);
       }
 
+      const raycaster = new THREE.Raycaster();
+      const mouse = new THREE.Vector2();
+
+      function onMouseClick(event) {
+        raycaster.setFromCamera(mouse, camera);
+        const isIntersected = raycaster.intersectObject(sphere);
+        console.log({ isIntersected });
+        if (isIntersected.length) {
+          alert("Name: " + planetName);
+        }
+      }
+
       starGeometry.setAttribute(
         "position",
         new THREE.Float32BufferAttribute(starVertices, 3)
@@ -122,17 +165,24 @@
         requestAnimationFrame(animate);
         // sphere.rotation.x += 0.01;
         sphere.rotation.y += 0.01;
+
         renderer.render(scene, camera);
       };
       buttons.forEach((btn) => {
         btn.addEventListener("click", (el) => {
           console.log(el.target.dataset);
           planetName = el.target.dataset.planetname;
-          const res = el.target.dataset?.res || '2';
-          changeTexture(planetName, res);
+          const res = el.target.dataset?.res || "2";
+          const scale = el.target.dataset?.scale || "1";
+          changeTexture(planetName, res, scale);
         });
       });
-
+      function onMouseMove(event) {
+        mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+        mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+      }
+      window.addEventListener("click", onMouseClick, false);
+      window.addEventListener("mousemove", onMouseMove, false);
       animate();
     </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
